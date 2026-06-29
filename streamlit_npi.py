@@ -160,8 +160,9 @@ def main() -> None:
 
     st.title("NPI Orchestrator")
     st.caption(
-        "Agentic workflow: **customer input** → route → **Need / Concept / Bid / Develop / "
-        "**Validate / Launch** → **customer response**. Backend: keyless `cursor-agent` CLI."
+        "Agentic workflow: **customer input** → **Orchestrator agent** (picks agents + order) → "
+        "**Need / Concept / Bid / Develop / Validate / Launch** → **customer response**. "
+        "Backend: keyless `cursor-agent` CLI."
     )
 
     default_customer = st.session_state.get("sample_customer_input", "")
@@ -215,11 +216,16 @@ def main() -> None:
             disabled=not customer_input.strip(),
         )
     with cols[1]:
+        plan_only = st.button(
+            "Plan agent calls",
+            disabled=not customer_input.strip(),
+        )
+    with cols[2]:
         run_all = st.button(
             "Run full gate review",
             disabled=not (project_brief.strip() or customer_input.strip()),
         )
-    with cols[2]:
+    with cols[3]:
         if st.button("Clear"):
             orch.results = {}
             orch.route_plan = None
@@ -231,19 +237,31 @@ def main() -> None:
     wf = _get_workflow()
     if wf is not None:
         plan = wf.route_plan
+        skipped = [p.agent_name for p in PHASES if p.id not in plan.phases_to_run]
+        skip_note = f" Skipped: {', '.join(skipped)}." if skipped else ""
         st.info(
-            f"**Workflow:** routed to **{plan.current_scope}** → consulted "
-            f"**{', '.join(wf.agents_consulted)}** agents "
-            f"({', '.join(plan.phases_to_run)}). _{plan.rationale}_"
+            f"**Orchestrator plan:** program at **{plan.current_scope}** → call "
+            f"**{plan.agent_sequence_label}** ({' → '.join(plan.phases_to_run)}). "
+            f"_{plan.rationale}_"
+            + (f" Order: _{plan.order_rationale}_" if plan.order_rationale else "")
+            + skip_note
         )
         _render_customer_response(wf)
 
     elif orch.route_plan is not None:
         plan = orch.route_plan
+        skipped = [p.agent_name for p in PHASES if p.id not in plan.phases_to_run]
+        skip_note = f" Skipped: {', '.join(skipped)}." if skipped else ""
         st.info(
-            f"**Routing:** current **{plan.current_scope}** → "
-            f"**{plan.start_scope}** through **{plan.end_scope}**. _{plan.rationale}_"
+            f"**Orchestrator plan:** program at **{plan.current_scope}** → call "
+            f"**{plan.agent_sequence_label}** ({' → '.join(plan.phases_to_run)}). "
+            f"_{plan.rationale}_"
+            + (f" Order: _{plan.order_rationale}_" if plan.order_rationale else "")
+            + skip_note
         )
+        if plan.orchestrator_visible:
+            with st.expander("Orchestrator agent notes", expanded=False):
+                st.markdown(plan.orchestrator_visible)
 
     st.subheader("Gate status")
     strip = st.columns(len(PHASES))
@@ -257,15 +275,24 @@ def main() -> None:
             )
             st.markdown(_decision_badge(label), unsafe_allow_html=True)
 
+    if plan_only:
+        with st.spinner("Orchestrator agent planning agent calls..."):
+            try:
+                orch.plan_from_customer_input(customer_input)
+                st.session_state.workflow_result = None
+            except Exception as exc:  # noqa: BLE001
+                st.error(str(exc))
+        st.rerun()
+
     if run_workflow:
-        progress = st.progress(0.0, text="Step 1/3: Routing customer input...")
+        progress = st.progress(0.0, text="Step 1/3: Orchestrator agent planning...")
         status = st.empty()
         try:
             def on_route(plan):
                 progress.progress(0.1, text="Step 2/3: Running phase agents...")
                 status.info(
-                    f"Routing → **{plan.current_scope}**. "
-                    f"Calling: {', '.join(plan.phases_to_run)}"
+                    f"Orchestrator → **{plan.agent_sequence_label}** "
+                    f"({' → '.join(plan.phases_to_run)})"
                 )
 
             total_phases = 0

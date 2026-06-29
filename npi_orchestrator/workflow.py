@@ -77,7 +77,8 @@ def run_customer_workflow(
     """Run the full agentic workflow for a customer ask.
 
     Steps:
-    1. **Intake router** — infer current NPI phase and which agents to call.
+    1. **Orchestrator agent** — read customer needs; pick which phase agents to
+       call and in what order.
     2. **Phase agents** — Need / Concept / Bid / Develop / Validate / Launch
        assess their gates and thread hand-offs.
     3. **Response synthesizer** — compose a customer-facing reply.

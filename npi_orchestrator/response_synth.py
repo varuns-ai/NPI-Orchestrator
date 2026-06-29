@@ -1,6 +1,6 @@
 """Synthesize a customer-facing reply from phase agent gate assessments.
 
-After the intake router and phase agents have run, the response synthesizer
+After the Orchestrator agent and phase agents have run, the response synthesizer
 reads their decisions and produces a clear answer to the original customer ask.
 """
 
@@ -24,11 +24,12 @@ assessed the customer's request across the NPI process. Your job is to write a
 
 {customer_input}
 
-## Routing decision
+## Routing decision (Orchestrator agent)
 
 - Current phase: **{current_phase}**
-- Agents consulted: **{agents_consulted}**
-- Routing rationale: {rationale}
+- Agents to call (in order): **{agent_sequence}**
+- Why these agents: {rationale}
+- Why this order: {order_rationale}
 
 ## Phase agent assessments
 
@@ -137,11 +138,14 @@ def synthesize_customer_response(
 ) -> CustomerResponse:
     """Generate a customer-facing reply from phase agent results."""
     agents = ", ".join(r.agent_name for r in phase_results) or "none"
+    sequence = getattr(route_plan, "agent_sequence_label", agents)
+    order_rationale = getattr(route_plan, "order_rationale", "") or "(not provided)"
     prompt = _SYNTH_PROMPT.format(
         customer_input=customer_input.strip(),
         current_phase=route_plan.current_scope,
-        agents_consulted=agents,
+        agent_sequence=sequence,
         rationale=route_plan.rationale or "(not provided)",
+        order_rationale=order_rationale,
         phase_summaries=_format_phase_summaries(phase_results),
     )
     raw = run_agent_turn(

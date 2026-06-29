@@ -14,7 +14,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from .agents import PhaseAgent
-from .customer_router import CustomerRoutePlan, route_customer_input
+from .customer_router import CustomerRoutePlan, plan_agent_calls
 from .meta import decision_label, normalize_decision
 from .phase_agents import AGENT_FACTORIES
 from .phases import PHASES, Phase, get_phase, phase_ids_from
@@ -87,8 +87,16 @@ class NPIOrchestrator:
         )
 
     def _upstream_handoffs(self, phase: Phase) -> list[tuple[str, str]]:
-        """Hand-off notes from every phase before ``phase`` that has run."""
+        """Hand-off notes from agents that ran earlier in the orchestrated order."""
         ups: list[tuple[str, str]] = []
+        if self.route_plan and self.route_plan.phases_to_run:
+            for pid in self.route_plan.phases_to_run:
+                if pid == phase.id:
+                    break
+                res = self.results.get(pid)
+                if res and res.handoff:
+                    ups.append((get_phase(pid).label, res.handoff))
+            return ups
         for p in PHASES:
             if p.id == phase.id:
                 break
@@ -142,8 +150,8 @@ class NPIOrchestrator:
         return out
 
     def plan_from_customer_input(self, customer_input: str) -> CustomerRoutePlan:
-        """Route customer input to phase agents; store and apply the project brief."""
-        plan = route_customer_input(
+        """Orchestrator agent: decide which phase agents to call and in what order."""
+        plan = plan_agent_calls(
             customer_input,
             workspace=self.workspace,
             model=self.model,
@@ -262,6 +270,8 @@ class NPIOrchestrator:
             "backend": self.backend,
             "results": {pid: asdict(r) for pid, r in self.results.items()},
         }
+        if self.route_plan is not None:
+            data["route_plan"] = asdict(self.route_plan)
         if self.customer_response is not None:
             cr = self.customer_response
             data["customer_response"] = {
@@ -297,6 +307,19 @@ class NPIOrchestrator:
         )
         for pid, rd in (data.get("results") or {}).items():
             orch.results[pid] = PhaseResult(**rd)
+        rp = data.get("route_plan")
+        if isinstance(rp, dict):
+            agents = rp.get("agents_to_call") or rp.get("phases_to_run") or []
+            orch.route_plan = CustomerRoutePlan(
+                customer_input=rp.get("customer_input", ""),
+                project_brief=rp.get("project_brief", ""),
+                current_phase_id=rp.get("current_phase_id", "PH1"),
+                agents_to_call=list(agents),
+                rationale=rp.get("rationale", ""),
+                order_rationale=rp.get("order_rationale", ""),
+                orchestrator_visible=rp.get("orchestrator_visible", ""),
+                raw_response=rp.get("raw_response", ""),
+            )
         return orch
 
     # --- reporting -----------------------------------------------------------

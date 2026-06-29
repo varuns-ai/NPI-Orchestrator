@@ -23,8 +23,8 @@ chart:
 customer needs
      |
      v
-[Intake Router]  --cursor-agent CLI (keyless)-->
-     |  which agents: Need / Concept / Bid / Develop / Validate / Launch
+[Orchestrator Agent]  --cursor-agent CLI (keyless)-->
+     |  which agents + order: e.g. Need → Bid → Validate
      v
 [Phase agents]   --cursor-agent CLI-->  gate GO/NO-GO + hand-offs
      |
@@ -32,9 +32,10 @@ customer needs
 [Response Agent] --cursor-agent CLI-->  customer-facing reply
 ```
 
-**Agentic workflow:** paste the customer's ask. The orchestrator (1) routes to
-the right phase agents, (2) runs each via the keyless `cursor-agent` CLI, and
-(3) synthesizes a reply that directly answers the customer.
+**Agentic workflow:** paste the customer's ask. The **Orchestrator agent** (1) reads
+customer needs and picks which phase agents to call and in what order, (2) runs
+each via the keyless `cursor-agent` CLI, and (3) synthesizes a reply that
+directly answers the customer.
 
 **Manual mode:** enter a project brief and run any single phase agent or the
 full gate review across all six phases.
@@ -107,4 +108,4 @@ orch, wf = run_customer_workflow(
 print(wf.customer_response.visible)  # reply to send to the customer
 ```
 
-See `ARCHITECTURE.md` for the module layout.
+See `ARCHITECTURE.md` for the module layout and architecture diagram (`npi-orchestrator-architecture.png`).

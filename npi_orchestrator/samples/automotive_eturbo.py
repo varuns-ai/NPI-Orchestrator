@@ -491,10 +491,9 @@ def _route_plan() -> CustomerRoutePlan:
         customer_input=CUSTOMER_INPUT,
         project_brief=PROJECT_BRIEF,
         current_phase_id="PH1",
-        start_phase_id="PH1",
-        end_phase_id="PH6",
-        phases_to_run=[p.id for p in PHASES],
+        agents_to_call=[p.id for p in PHASES],
         rationale="Full NPI lifecycle requested: funding through SOP/PPAP for new 48V eTurbo need.",
+        order_rationale="All six agents in lifecycle order — greenfield program from Need through Launch.",
     )
 
 

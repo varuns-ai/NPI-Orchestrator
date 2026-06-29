@@ -10,7 +10,7 @@ from __future__ import annotations
 from .agents import PhaseAgent
 from .meta import decision_label, normalize_decision, split_phase_response
 from .orchestrator import NPIOrchestrator, PhaseResult
-from .customer_router import CustomerRoutePlan, route_customer_input
+from .customer_router import CustomerRoutePlan, OrchestrationPlan, plan_agent_calls, route_customer_input
 from .phases import PHASES, PHASES_BY_ID, Phase, get_phase, phase_ids_from
 from .response_synth import CustomerResponse, synthesize_customer_response
 from .runner import run_agent_turn, runtime_ready
@@ -22,8 +22,10 @@ __all__ = [
     "NPIOrchestrator",
     "PhaseResult",
     "CustomerRoutePlan",
+    "OrchestrationPlan",
     "CustomerResponse",
     "CustomerWorkflowResult",
+    "plan_agent_calls",
     "route_customer_input",
     "run_customer_workflow",
     "synthesize_customer_response",

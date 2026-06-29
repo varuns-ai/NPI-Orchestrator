@@ -459,10 +459,9 @@ def _route_plan() -> CustomerRoutePlan:
         customer_input=CUSTOMER_INPUT,
         project_brief=PROJECT_BRIEF,
         current_phase_id="PH1",
-        start_phase_id="PH1",
-        end_phase_id="PH6",
-        phases_to_run=[p.id for p in PHASES],
+        agents_to_call=[p.id for p in PHASES],
         rationale="Full NPI for BYD 2030 PHEV-at-SOP; SOR benchmark Audi PPC + E³ 1.2; funding through launch.",
+        order_rationale="All six agents in lifecycle order for a new platform SOR.",
     )
 
 
