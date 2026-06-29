@@ -109,3 +109,7 @@ print(wf.customer_response.visible)  # reply to send to the customer
 ```
 
 See `ARCHITECTURE.md` for the module layout and architecture diagram (`npi-orchestrator-architecture.png`).
+
+## Cursor skill
+
+A project skill for Cursor agents lives at `.cursor/skills/npi-orchestrator/`. It teaches the agent how to run, extend, and debug this orchestrator (routing, CLI, Streamlit, samples, contracts). Cursor loads it automatically when you work on NPI Orchestrator topics in this repo.
