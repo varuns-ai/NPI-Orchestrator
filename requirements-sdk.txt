@@ -1,0 +1,3 @@
+# Optional: Cursor Python SDK (Agent.prompt, model auto) with CURSOR_API_KEY.
+# Without this package, the orchestrator uses the keyless `cursor-agent` CLI only.
+cursor-sdk

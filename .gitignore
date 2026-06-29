@@ -1,0 +1,30 @@
+# Local tools
+.tools/
+
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+dist/
+build/
+.venv/
+venv/
+env/
+
+# NPI Orchestrator state
+.npi_project_state.json
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+*.swp
+
+# Secrets
+.env
+.env.*
+*.pem
+
+# Streamlit
+.streamlit/secrets.toml

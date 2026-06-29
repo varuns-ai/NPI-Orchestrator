@@ -1,0 +1,4 @@
+# NPI Orchestrator - UI + core.
+# The agents talk to Cursor via the keyless `cursor-agent` CLI by default.
+# For the SDK backend, also install requirements-sdk.txt and set CURSOR_API_KEY.
+streamlit>=1.36
